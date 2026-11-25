@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Report Lost Item — FindBack-Campus{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="{{ url_for('index') }}">Home</a>
+      <span aria-hidden="true">/</span>
+      <span>Report Lost Item</span>
+    </div>
+    <h1 class="page-title">Report a Lost Item</h1>
+    <p class="page-subtitle">Share clear details and the last place you remember having your belonging so campus finders can match it.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="form-card form-card-medium">
+      <form method="POST" action="{{ url_for('report_lost') }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="item_name" class="form-label">Item Name</label>
+            <input type="text" id="item_name" name="item_name" class="form-control" required minlength="2" value="{{ form_data.get('item_name', '') }}" placeholder="e.g. Silver MacBook Air 13-inch" />
+          </div>
+
+          <div class="form-group">
+            <label for="category" class="form-label">Item Category</label>
+            <select id="category" name="category" class="form-control" required>
+              <option value="">Select category</option>
+              {% for cat in categories %}
+                <option value="{{ cat }}" {% if form_data.get('category') == cat %}selected{% endif %}>{{ cat }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="location-select" class="form-label">Last Seen Location</label>
+            <select id="location-select" name="location" class="form-control" required>
+              <option value="">Select campus location</option>
+              {% for loc in campus_locations %}
+                <option value="{{ loc }}" {% if form_data.get('location') == loc %}selected{% endif %}>{{ loc }}</option>
+              {% endfor %}
+              <option value="Other" {% if form_data.get('location') and form_data.get('location') not in campus_locations %}selected{% endif %}>Other Campus Area</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="custom-location-wrap" style="display: none;">
+            <label for="custom_location" class="form-label">Specify Campus Area</label>
+            <input type="text" id="custom_location" name="custom_location" class="form-control" value="{{ form_data.get('location', '') if form_data.get('location') not in campus_locations else '' }}" placeholder="e.g. Chemistry Annex Lab 3B" />
+          </div>
+
+          <div class="form-group">
+            <label for="item_date" class="form-label">Date Lost</label>
+            <input type="date" id="item_date" name="item_date" class="form-control" required value="{{ form_data.get('item_date', '') }}" />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="contact_info" class="form-label">Contact Information</label>
+            <input type="text" id="contact_info" name="contact_info" class="form-control" required minlength="5" value="{{ form_data.get('contact_info', '') }}" placeholder="College email or phone number" />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="description" class="form-label">Description</label>
+            <textarea id="description" name="description" class="form-control" required minlength="10" placeholder="Include color, brand, stickers, case details, or anything distinctive...">{{ form_data.get('description', '') }}</textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="item-image-input" class="form-label">Upload Item Image (Optional)</label>
+            <div class="upload-zone">
+              <input type="file" id="item-image-input" name="image" accept=".png,.jpg,.jpeg,.webp,.gif" />
+              <span class="form-hint" id="image-upload-feedback">Allowed formats: PNG, JPG, JPEG, WEBP, GIF (max 5 MB).</span>
+              <img id="item-image-preview" class="upload-preview" alt="Selected item preview" />
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+          <button type="submit" class="btn btn-primary btn-lg">Submit Lost Item Report</button>
+          <a href="{{ url_for('browse', type='Lost') }}" class="btn btn-secondary btn-lg">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}About — FindBack-Campus{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="{{ url_for('index') }}">Home</a>
+      <span aria-hidden="true">/</span>
+      <span>About</span>
+    </div>
+    <h1 class="page-title">About FindBack-Campus</h1>
+    <p class="page-subtitle">A unified campus lost-and-found network built for faster recovery and verified handoffs.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="details-grid" style="margin-bottom: 48px;">
+      <div>
+        <h2 class="section-title">What Is FindBack-Campus?</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 16px;">
+          On a busy college campus, misplaced belongings often end up scattered across library desks, engineering labs, dining halls, and residence front desks. Without a single shared directory, students rarely know where to check first.
+        </p>
+        <p style="color: var(--text-secondary); margin-bottom: 24px;">
+          FindBack-Campus brings every campus lost-and-found report into one structured, searchable platform. Students and faculty can post photos of found items, log missing possessions with last-seen locations, and verify ownership through an organized claim review workflow.
+        </p>
+        <div class="hero-actions">
+          <a href="{{ url_for('browse') }}" class="btn btn-primary">Browse Active Listings</a>
+          <a href="{{ url_for('register') }}" class="btn btn-secondary">Register Campus Account</a>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h3 class="panel-title">Campus Impact Summary</h3>
+        </div>
+        <div class="panel-body" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: center;">
+          <div>
+            <div class="stat-value blue tabular-nums">{{ total_items }}</div>
+            <div class="stat-label" style="font-size: 0.82rem;">Total Listings</div>
+          </div>
+          <div>
+            <div class="stat-value green tabular-nums">{{ total_returned }}</div>
+            <div class="stat-label" style="font-size: 0.82rem;">Items Returned</div>
+          </div>
+          <div>
+            <div class="stat-value purple tabular-nums">{{ total_users }}</div>
+            <div class="stat-label" style="font-size: 0.82rem;">Campus Members</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 48px;">
+      <h2 class="section-title" style="margin-bottom: 20px;">Why a Centralized System Matters</h2>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">Benefit 01</div>
+          <h3 class="step-title">One Searchable Campus Index</h3>
+          <p class="step-text">
+            Instead of emailing separate department offices or posting in scattered group chats, every lost and found report is searchable by building, category, and date.
+          </p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">Benefit 02</div>
+          <h3 class="step-title">Verified Ownership Claims</h3>
+          <p class="step-text">
+            Claimants provide student ID details and specific identifying traits before meeting up, giving finders clear proof before approving a return.
+          </p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">Benefit 03</div>
+          <h3 class="step-title">Clear Status Tracking</h3>
+          <p class="step-text">
+            Listings move transparently from Active to Pending Claim, Claim Approved, and Returned, so no one wastes trips chasing items already picked up.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">How Students &amp; Faculty Use FindBack-Campus</h2>
+      </div>
+      <div class="panel-body">
+        <div class="form-grid">
+          <div>
+            <h3 style="font-size: 1.02rem; margin-bottom: 6px;">If You Lost an Item</h3>
+            <p style="color: var(--text-secondary); margin: 0;">
+              First search the <a href="{{ url_for('browse', type='Found') }}" style="color: var(--blue-primary); font-weight: 600;">Found Items</a> catalog using building and category filters. If it is not listed yet, publish a Lost Item report with a clear description and photo so anyone who finds it can reach you.
+            </p>
+          </div>
+          <div>
+            <h3 style="font-size: 1.02rem; margin-bottom: 6px;">If You Found an Item</h3>
+            <p style="color: var(--text-secondary); margin: 0;">
+              Log the item under <a href="{{ url_for('report_found') }}" style="color: var(--purple-accent); font-weight: 600;">Report Found</a> with where and when you picked it up. When students submit claims, review their identifying details in your dashboard, approve the rightful owner, and confirm return once handed over.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

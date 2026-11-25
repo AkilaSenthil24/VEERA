@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard — FindBack-Campus{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container page-header-inner">
+    <div>
+      <div class="breadcrumb">
+        <a href="{{ url_for('index') }}">Home</a>
+        <span aria-hidden="true">/</span>
+        <span>Dashboard</span>
+      </div>
+      <h1 class="page-title">Welcome, {{ current_user.full_name }}</h1>
+      <p class="page-subtitle">
+        {{ current_user.department }} &middot; {{ current_user.year }} &middot; ID <span class="font-mono-num">{{ current_user.student_id }}</span>
+      </p>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+      <a href="{{ url_for('report_lost') }}" class="btn btn-primary">Report Lost Item</a>
+      <a href="{{ url_for('report_found') }}" class="btn btn-purple">Report Found Item</a>
+      <a href="{{ url_for('browse') }}" class="btn btn-secondary">Browse Items</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Items Reported</div>
+        <div class="kpi-value tabular-nums">{{ total_reported }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Lost Items Count</div>
+        <div class="kpi-value tabular-nums" style="color: var(--red-text);">{{ lost_count }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Found Items Count</div>
+        <div class="kpi-value tabular-nums" style="color: var(--blue-primary);">{{ found_count }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Successful Claims</div>
+        <div class="kpi-value tabular-nums" style="color: var(--green-text);">{{ successful_claims }}</div>
+      </div>
+    </div>
+
+    <div class="dashboard-split">
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Your Recent Reported Items</h2>
+          <a href="{{ url_for('profile') }}" class="btn btn-ghost btn-sm">View All in Profile</a>
+        </div>
+
+        {% if my_items %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Type</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in my_items %}
+                  <tr>
+                    <td>
+                      <div style="font-weight: 600;">{{ item.item_name }}</div>
+                      <div style="font-size: 0.78rem; color: var(--text-muted);" class="tabular-nums">{{ item.category }} &middot; {{ item.item_date }}</div>
+                    </td>
+                    <td>
+                      {% if item.item_type == 'Lost' %}
+                        <span class="status-label status-lost">Lost</span>
+                      {% else %}
+                        <span class="status-label status-found">Found</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ item.location }}</td>
+                    <td>
+                      {% if item.status == 'Returned' %}
+                        <span class="status-label status-returned">Returned</span>
+                      {% elif item.status == 'Pending Claim' or item.status == 'Claim Approved' %}
+                        <span class="status-label status-pending">{{ item.status }}</span>
+                      {% else %}
+                        <span class="status-label status-found">{{ item.status }}</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <a href="{{ url_for('item_details', item_id=item.id) }}" class="btn btn-secondary btn-sm">Manage</a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="panel-body">
+            <p style="color: var(--text-secondary); margin: 0 0 14px;">You haven't reported any lost or found items yet.</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <a href="{{ url_for('report_lost') }}" class="btn btn-primary btn-sm">Report Lost Item</a>
+              <a href="{{ url_for('report_found') }}" class="btn btn-purple btn-sm">Report Found Item</a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Claims to Review (Your Found Items)</h2>
+          </div>
+          <div class="panel-body">
+            {% if incoming_claims %}
+              {% for claim in incoming_claims %}
+                <div class="claim-row">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 6px;">
+                    <div>
+                      <a href="{{ url_for('item_details', item_id=claim.item_id) }}" style="font-weight: 700; color: var(--blue-primary);">{{ claim.item_name }}</a>
+                      <div style="font-size: 0.8rem; color: var(--text-muted);">
+                        Claimant: {{ claim.claimant_name }} (<span class="font-mono-num">{{ claim.student_id }}</span>)
+                      </div>
+                    </div>
+                    {% if claim.status == 'Approved' %}
+                      <span class="status-label status-approved">Approved</span>
+                    {% elif claim.status == 'Rejected' %}
+                      <span class="status-label status-rejected">Rejected</span>
+                    {% else %}
+                      <span class="status-label status-pending">Pending</span>
+                    {% endif %}
+                  </div>
+
+                  <p style="margin: 6px 0; font-size: 0.88rem; color: var(--text-secondary);">
+                    {{ claim.claim_description }}
+                  </p>
+                  <p style="margin: 0; font-size: 0.82rem; color: var(--text-muted);">
+                    Identifying details: {{ claim.identifying_details }} &middot; Contact: {{ claim.contact_number }}
+                  </p>
+
+                  {% if claim.status == 'Pending' %}
+                    <div class="claim-actions">
+                      <form method="POST" action="{{ url_for('handle_claim_action', claim_id=claim.id) }}" class="inline-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <input type="hidden" name="action" value="approve" />
+                        <input type="hidden" name="next" value="{{ url_for('dashboard') }}" />
+                        <button type="submit" class="btn btn-primary btn-sm">Approve Claim</button>
+                      </form>
+                      <form method="POST" action="{{ url_for('handle_claim_action', claim_id=claim.id) }}" class="inline-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <input type="hidden" name="action" value="reject" />
+                        <input type="hidden" name="next" value="{{ url_for('dashboard') }}" />
+                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                      </form>
+                    </div>
+                  {% elif claim.status == 'Approved' and claim.item_status != 'Returned' %}
+                    <div class="claim-actions">
+                      <form method="POST" action="{{ url_for('handle_claim_action', claim_id=claim.id) }}" class="inline-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <input type="hidden" name="action" value="confirm_return" />
+                        <input type="hidden" name="next" value="{{ url_for('dashboard') }}" />
+                        <button type="submit" class="btn btn-success btn-sm">Confirm Item Returned</button>
+                      </form>
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% else %}
+              <p style="color: var(--text-secondary); margin: 0;">No claim requests have been submitted for your items yet.</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Your Submitted Claims</h2>
+          </div>
+          <div class="panel-body">
+            {% if my_claims %}
+              {% for claim in my_claims %}
+                <div class="claim-row">
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    <div>
+                      <a href="{{ url_for('item_details', item_id=claim.item_id) }}" style="font-weight: 600;">{{ claim.item_name }}</a>
+                      <div style="font-size: 0.8rem; color: var(--text-muted);">{{ claim.location }} &middot; Item Status: {{ claim.item_status }}</div>
+                    </div>
+                    {% if claim.status == 'Approved' %}
+                      <span class="status-label status-approved">Approved</span>
+                    {% elif claim.status == 'Rejected' %}
+                      <span class="status-label status-rejected">Rejected</span>
+                    {% else %}
+                      <span class="status-label status-pending">Pending</span>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <p style="color: var(--text-secondary); margin: 0;">You have not submitted any ownership claims yet.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

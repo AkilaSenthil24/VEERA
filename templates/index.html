@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}FindBack-Campus — Lost Something on Campus? Let's Find It!{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <div class="hero-eyebrow">Campus Lost &amp; Found Hub</div>
+        <h1 class="hero-title">
+          Lost Something on Campus? <span class="accent-word">Let's Find It!</span>
+        </h1>
+        <p class="hero-lead">
+          FindBack-Campus connects students and faculty across libraries, lecture halls, and residence quads so missing electronics, backpacks, keys, and textbooks return to their rightful owners fast.
+        </p>
+        <div class="hero-actions">
+          <a href="{{ url_for('report_lost') }}" class="btn btn-primary btn-lg">Report Lost Item</a>
+          <a href="{{ url_for('report_found') }}" class="btn btn-purple btn-lg">Report Found Item</a>
+          <a href="{{ url_for('browse') }}" class="btn btn-secondary btn-lg">Browse Listings</a>
+        </div>
+      </div>
+
+      <div class="hero-media">
+        <img
+          src="{{ url_for('static', filename='samples/hero_campus_hub.jpg') }}"
+          alt="Students walking across the university campus courtyard near the main library"
+        />
+      </div>
+    </div>
+
+    <div class="stats-strip" aria-label="Campus recovery statistics">
+      <div class="stat-cell">
+        <span class="stat-value blue tabular-nums">{{ total_lost }}</span>
+        <span class="stat-label">Total Lost Items Reported</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-value purple tabular-nums">{{ total_found }}</span>
+        <span class="stat-label">Total Found Items Logged</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-value green tabular-nums">{{ total_returned }}</span>
+        <span class="stat-label">Successfully Returned Items</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Recently Reported Items</h2>
+        <p class="section-subtitle">Latest lost and found belongings submitted by students and staff across campus buildings.</p>
+      </div>
+      <a href="{{ url_for('browse') }}" class="btn btn-secondary btn-sm">View All Items</a>
+    </div>
+
+    {% if recent_items %}
+      <div class="items-grid">
+        {% for item in recent_items %}
+          <article class="item-card">
+            <a href="{{ url_for('item_details', item_id=item.id) }}" class="item-media">
+              {% if item.image %}
+                <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.item_name }}" />
+              {% else %}
+                <div class="item-fallback">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                    <path d="m3.3 7 8.7 5 8.7-5"></path>
+                    <path d="M12 22V12"></path>
+                  </svg>
+                  <span>{{ item.category }}</span>
+                </div>
+              {% endif %}
+            </a>
+            <div class="item-body">
+              <div class="item-meta-line">
+                <span>{{ item.category }}</span>
+                <span aria-hidden="true">&middot;</span>
+                <span>{{ item.location }}</span>
+                <span aria-hidden="true">&middot;</span>
+                <span class="tabular-nums">{{ item.item_date }}</span>
+              </div>
+              <h3 class="item-title">
+                <a href="{{ url_for('item_details', item_id=item.id) }}">{{ item.item_name }}</a>
+              </h3>
+              <p class="item-desc">{{ item.description }}</p>
+              <div class="item-footer">
+                {% if item.status == 'Returned' %}
+                  <span class="status-label status-returned">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Returned
+                  </span>
+                {% elif item.status == 'Pending Claim' or item.status == 'Claim Approved' %}
+                  <span class="status-label status-pending">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    {{ item.status }}
+                  </span>
+                {% elif item.item_type == 'Lost' %}
+                  <span class="status-label status-lost">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Lost
+                  </span>
+                {% else %}
+                  <span class="status-label status-found">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    Found
+                  </span>
+                {% endif %}
+                <a href="{{ url_for('item_details', item_id=item.id) }}" class="btn btn-secondary btn-sm">View Details</a>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+        </div>
+        <h3>No items reported yet</h3>
+        <p style="color: var(--text-secondary);">Be the first to log a lost or found belonging on campus.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section section-muted">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">How FindBack-Campus Works</h2>
+        <p class="section-subtitle">A transparent three-step process designed for verified student and faculty handoffs.</p>
+      </div>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01. Report</div>
+        <h3 class="step-title">Post a Lost or Found Listing</h3>
+        <p class="step-text">
+          Sign in with your college credentials and submit the item name, category, building location, date, and a photo so others can recognize it immediately.
+        </p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02. Match &amp; Verify</div>
+        <h3 class="step-title">Search Filters &amp; Ownership Claims</h3>
+        <p class="step-text">
+          Browse by campus building, category, or keyword. When you spot your found belonging, submit a claim request describing unique identifying marks.
+        </p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03. Claim &amp; Return</h3>
+        <h3 class="step-title">Approve Handoff &amp; Confirm Return</h3>
+        <p class="step-text">
+          The original finder reviews claim details in their dashboard, approves the verified owner, and marks the listing as returned after pickup.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

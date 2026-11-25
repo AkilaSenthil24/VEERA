@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Claim Item: {{ item.item_name }} — FindBack-Campus{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="{{ url_for('index') }}">Home</a>
+      <span aria-hidden="true">/</span>
+      <a href="{{ url_for('browse', type='Found') }}">Found Items</a>
+      <span aria-hidden="true">/</span>
+      <a href="{{ url_for('item_details', item_id=item.id) }}">{{ item.item_name }}</a>
+      <span aria-hidden="true">/</span>
+      <span>Claim</span>
+    </div>
+    <h1 class="page-title">Submit Ownership Claim</h1>
+    <p class="page-subtitle">Provide accurate ownership and identifying details so the finder can verify and return your item.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="form-card form-card-medium">
+      <div style="padding-bottom: 18px; margin-bottom: 22px; border-bottom: 1px solid var(--border-hairline);">
+        <div style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 4px;">Claiming Found Item</div>
+        <div style="font-size: 1.2rem; font-weight: 700;">{{ item.item_name }}</div>
+        <div style="font-size: 0.88rem; color: var(--text-secondary);">{{ item.category }} &middot; {{ item.location }} &middot; Found on {{ item.item_date }}</div>
+      </div>
+
+      <form method="POST" action="{{ url_for('claim_item', item_id=item.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="claimant_name" class="form-label">Claimant Name</label>
+            <input type="text" id="claimant_name" name="claimant_name" class="form-control" required minlength="2" value="{{ form_data.get('claimant_name', '') }}" />
+          </div>
+
+          <div class="form-group">
+            <label for="student_id" class="form-label">Student ID</label>
+            <input type="text" id="student_id" name="student_id" class="form-control" required minlength="3" value="{{ form_data.get('student_id', '') }}" />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="contact_number" class="form-label">Contact Number</label>
+            <input type="tel" id="contact_number" name="contact_number" class="form-control" required value="{{ form_data.get('contact_number', '') }}" placeholder="(555) 123-4567" />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="claim_description" class="form-label">Description of Ownership</label>
+            <textarea id="claim_description" name="claim_description" class="form-control" required minlength="10" placeholder="Explain when and where you misplaced this item and confirm it belongs to you...">{{ form_data.get('claim_description', '') }}</textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="identifying_details" class="form-label">Additional Identifying Details</label>
+            <textarea id="identifying_details" name="identifying_details" class="form-control" required minlength="5" placeholder="Mention contents inside, lockscreen wallpaper, engravings, scratches, or serial digits...">{{ form_data.get('identifying_details', '') }}</textarea>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+          <button type="submit" class="btn btn-purple btn-lg">Submit Claim Request</button>
+          <a href="{{ url_for('item_details', item_id=item.id) }}" class="btn btn-secondary btn-lg">Back to Item</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

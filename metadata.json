@@ -1,0 +1,6 @@
+{
+  "name": "FindBack-Campus",
+  "description": "Smart Lost and Found Management System for college campuses.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

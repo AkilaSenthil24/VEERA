@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Browse Lost &amp; Found Items — FindBack-Campus{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container page-header-inner">
+    <div>
+      <div class="breadcrumb">
+        <a href="{{ url_for('index') }}">Home</a>
+        <span aria-hidden="true">/</span>
+        <span>Browse Items</span>
+      </div>
+      <h1 class="page-title">Browse Campus Items</h1>
+      <p class="page-subtitle">Search across reported lost and found belongings by category, building, and date.</p>
+    </div>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <a href="{{ url_for('report_lost') }}" class="btn btn-primary btn-sm">Report Lost</a>
+      <a href="{{ url_for('report_found') }}" class="btn btn-purple btn-sm">Report Found</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="segmented-tabs" role="navigation" aria-label="Filter by report type">
+      <a href="{{ url_for('browse', q=filters.q, category=filters.category, type='All', location=filters.location, sort=filters.sort) }}"
+         class="segmented-tab {% if filters.type == 'All' %}active{% endif %}">All Listings</a>
+      <a href="{{ url_for('browse', q=filters.q, category=filters.category, type='Lost', location=filters.location, sort=filters.sort) }}"
+         class="segmented-tab {% if filters.type == 'Lost' %}active{% endif %}">Lost Items</a>
+      <a href="{{ url_for('browse', q=filters.q, category=filters.category, type='Found', location=filters.location, sort=filters.sort) }}"
+         class="segmented-tab {% if filters.type == 'Found' %}active{% endif %}">Found Items</a>
+    </div>
+
+    <form method="GET" action="{{ url_for('browse') }}" class="filter-panel">
+      <div class="filter-grid">
+        <div class="form-group">
+          <label for="q" class="form-label">Search</label>
+          <input type="text" id="q" name="q" class="form-control" value="{{ filters.q }}" placeholder="Keyword, brand, or location..." />
+        </div>
+
+        <div class="form-group">
+          <label for="type" class="form-label">Type</label>
+          <select id="type" name="type" class="form-control">
+            <option value="All" {% if filters.type == 'All' %}selected{% endif %}>All Types</option>
+            <option value="Lost" {% if filters.type == 'Lost' %}selected{% endif %}>Lost</option>
+            <option value="Found" {% if filters.type == 'Found' %}selected{% endif %}>Found</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="category" class="form-label">Category</label>
+          <select id="category" name="category" class="form-control">
+            <option value="All" {% if filters.category == 'All' %}selected{% endif %}>All Categories</option>
+            {% for cat in categories %}
+              <option value="{{ cat }}" {% if filters.category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="location" class="form-label">Location</label>
+          <select id="location" name="location" class="form-control">
+            <option value="All" {% if filters.location == 'All' %}selected{% endif %}>All Locations</option>
+            {% for loc in all_locations %}
+              <option value="{{ loc }}" {% if filters.location == loc %}selected{% endif %}>{{ loc }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="sort" class="form-label">Sort By</label>
+          <select id="sort" name="sort" class="form-control">
+            <option value="newest" {% if filters.sort == 'newest' %}selected{% endif %}>Newest First</option>
+            <option value="oldest" {% if filters.sort == 'oldest' %}selected{% endif %}>Oldest First</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button type="submit" class="btn btn-primary">Filter</button>
+          <a href="{{ url_for('browse') }}" class="btn btn-secondary">Reset</a>
+        </div>
+      </div>
+    </form>
+
+    <div style="margin-bottom: 18px; font-size: 0.9rem; color: var(--text-secondary);">
+      Showing <strong class="tabular-nums">{{ items|length }}</strong> matching item{% if items|length != 1 %}s{% endif %}
+    </div>
+
+    {% if items %}
+      <div class="items-grid">
+        {% for item in items %}
+          <article class="item-card">
+            <a href="{{ url_for('item_details', item_id=item.id) }}" class="item-media">
+              {% if item.image %}
+                <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.item_name }}" />
+              {% else %}
+                <div class="item-fallback">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                    <path d="m3.3 7 8.7 5 8.7-5"></path>
+                    <path d="M12 22V12"></path>
+                  </svg>
+                  <span>{{ item.category }}</span>
+                </div>
+              {% endif %}
+            </a>
+            <div class="item-body">
+              <div class="item-meta-line">
+                <span>{{ item.category }}</span>
+                <span aria-hidden="true">&middot;</span>
+                <span>{{ item.location }}</span>
+                <span aria-hidden="true">&middot;</span>
+                <span class="tabular-nums">{{ item.item_date }}</span>
+              </div>
+              <h2 class="item-title">
+                <a href="{{ url_for('item_details', item_id=item.id) }}">{{ item.item_name }}</a>
+              </h2>
+              <p class="item-desc">{{ item.description }}</p>
+              <div class="item-footer">
+                {% if item.status == 'Returned' %}
+                  <span class="status-label status-returned">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Returned
+                  </span>
+                {% elif item.status == 'Pending Claim' or item.status == 'Claim Approved' %}
+                  <span class="status-label status-pending">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    {{ item.item_type }} &middot; {{ item.status }}
+                  </span>
+                {% elif item.item_type == 'Lost' %}
+                  <span class="status-label status-lost">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Lost
+                  </span>
+                {% else %}
+                  <span class="status-label status-found">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    Found
+                  </span>
+                {% endif %}
+                <a href="{{ url_for('item_details', item_id=item.id) }}" class="btn btn-secondary btn-sm">View Details</a>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+        </div>
+        <h3>No matching items found</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 18px;">
+          Try broadening your search terms or clearing the active location and category filters.
+        </p>
+        <a href="{{ url_for('browse') }}" class="btn btn-primary">Reset All Filters</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
